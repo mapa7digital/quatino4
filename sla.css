@@ -1,0 +1,361 @@
+/* ==========================================================================
+   Paleta tirada da própria maquete: rio, musgo e barro.
+   ========================================================================== */
+:root {
+    --rio: #2a6f9e;
+    --rio-escuro: #1f5a83;
+    --musgo: #1d3a2d;
+    --musgo-suave: rgba(29, 58, 45, 0.72);
+    --musgo-linha: rgba(29, 58, 45, 0.14);
+    --barro: #7a5238;
+    --vidro: rgba(255, 255, 255, 0.78);
+    --vidro-borda: rgba(255, 255, 255, 0.85);
+    --sombra: 0 6px 20px rgba(29, 58, 45, 0.16);
+    --safe-top: max(14px, env(safe-area-inset-top));
+    --safe-right: max(14px, env(safe-area-inset-right));
+    --safe-left: max(14px, env(safe-area-inset-left));
+    --safe-bottom: max(24px, env(safe-area-inset-bottom));
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    min-height: 100dvh;
+    font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--musgo);
+    /* O canvas 3D é transparente: este gradiente é o "cenário" do quati */
+    background: radial-gradient(90% 70% at 50% 38%, #f1f7f2 0%, #cde1da 52%, #9bbfb9 100%);
+    -webkit-font-smoothing: antialiased;
+}
+
+canvas {
+    display: block;
+}
+
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--rio);
+    outline-offset: 2px;
+}
+
+/* ---------- Título e dica ---------- */
+#info {
+    position: absolute;
+    top: var(--safe-top);
+    left: var(--safe-left);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-width: min(70vw, 340px);
+    padding: 10px 16px;
+    background: var(--vidro);
+    border: 1px solid var(--vidro-borda);
+    border-radius: 14px;
+    box-shadow: var(--sombra);
+    pointer-events: none;
+}
+
+#info strong {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+}
+
+#info span {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--musgo-suave);
+}
+
+/* ---------- Carregamento ---------- */
+#loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 88vw;
+    text-align: center;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+}
+
+#loading.done {
+    opacity: 0;
+}
+
+#loading-text {
+    font-size: 13px;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+}
+
+.spinner {
+    width: 34px;
+    height: 34px;
+    border: 3px solid var(--musgo-linha);
+    border-top-color: var(--rio);
+    border-radius: 50%;
+    animation: girar 0.9s linear infinite;
+}
+
+.bar {
+    width: 160px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--musgo-linha);
+    overflow: hidden;
+}
+
+.bar i {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--rio);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s ease;
+}
+
+#loading.error #loading-text {
+    color: #8a2f22;
+}
+
+#loading.error .spinner,
+#loading.error .bar {
+    display: none;
+}
+
+@keyframes girar {
+    to { transform: rotate(360deg); }
+}
+
+/* ---------- Aviso de RA não suportada ---------- */
+#ar-warning {
+    display: none;
+    position: absolute;
+    bottom: calc(var(--safe-bottom) + 96px); /* acima do botão de RA */
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: min(90vw, 480px);
+    background: #8a3b2c;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    text-align: center;
+    box-shadow: var(--sombra);
+    z-index: 10;
+}
+
+/* ---------- Botão de RA + link da imagem-alvo ---------- */
+#ar-button-container {
+    position: absolute;
+    bottom: var(--safe-bottom);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#ar-button-container #ar-button {
+    background: var(--rio);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 14px 30px;
+    font: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    box-shadow: 0 8px 22px rgba(31, 90, 131, 0.35);
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+#ar-button-container #ar-button:hover {
+    background: var(--rio-escuro);
+}
+
+#ar-button-container #ar-button:active {
+    transform: scale(0.98);
+}
+
+#ar-button-container #ar-button:disabled {
+    opacity: 0.7;
+    cursor: progress;
+}
+
+#ar-marker-link {
+    color: var(--musgo);
+    background: var(--vidro);
+    border: 1px solid var(--vidro-borda);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: var(--sombra);
+    transition: background 0.15s ease;
+}
+
+#ar-marker-link:hover {
+    background: #fff;
+}
+
+/* ---------- Botão flutuante "Abrir no celular" ---------- */
+#qr-toggle {
+    position: absolute;
+    top: var(--safe-top);
+    right: var(--safe-right);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    background: var(--vidro);
+    color: var(--musgo);
+    border: 1px solid var(--vidro-borda);
+    border-radius: 999px;
+    padding: 0 16px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--sombra);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+#qr-toggle:hover {
+    background: #fff;
+}
+
+.qr-toggle-icon {
+    font-size: 16px;
+    color: var(--rio);
+}
+
+/* ---------- Painel de QR Code ---------- */
+#qr-panel {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 35, 28, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+}
+
+#qr-panel.open {
+    display: flex;
+}
+
+.qr-card {
+    position: relative;
+    background: #fbfdfb;
+    border-radius: 20px;
+    padding: 30px 26px 24px;
+    max-width: 340px;
+    width: 88vw;
+    max-height: 90dvh;
+    overflow-y: auto;
+    text-align: center;
+    color: var(--musgo);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.qr-card h2 {
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+}
+
+.qr-card p {
+    font-size: 13px;
+    color: var(--musgo-suave);
+    line-height: 1.5;
+    margin-bottom: 14px;
+}
+
+#qrcode {
+    display: flex;
+    justify-content: center;
+    width: fit-content;
+    min-width: 204px;
+    min-height: 204px;
+    margin: 14px auto;
+    background: #fff;
+    border: 1px solid var(--musgo-linha);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.qr-url {
+    word-break: break-all;
+    font-size: 11.5px !important;
+    color: var(--rio) !important;
+}
+
+.qr-note {
+    font-size: 11.5px !important;
+    color: rgba(29, 58, 45, 0.6) !important;
+    margin: 10px 0 0 !important;
+}
+
+#qr-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    color: var(--musgo-suave);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+#qr-close:hover {
+    background: var(--musgo-linha);
+    color: var(--musgo);
+}
+
+/* ---------- Responsividade e acessibilidade ---------- */
+@media (max-width: 480px) {
+    #qr-toggle {
+        width: 40px;
+        padding: 0;
+    }
+    #qr-toggle span:last-child {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spinner { animation-duration: 2.4s; }
+    #loading, .bar i, button, a { transition: none !important; }
+}

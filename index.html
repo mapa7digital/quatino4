@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#cde1da">
+    <title>Quati AR — Visualizador 3D e Realidade Aumentada</title>
+
+    <!-- Carregamento mais rápido: abre a conexão com o CDN e já baixa o modelo e os módulos em paralelo -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preload" href="quati.fbx" as="fetch" crossorigin>
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js">
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/FBXLoader.js">
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js">
+
+    <!-- Importmap: resolve os imports "nus" (from 'three') para URLs reais de CDN -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+            "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
+        }
+    }
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="sla.css">
+
+    <!-- Diagnóstico: roda mesmo que o app.js falhe ao carregar -->
+    <script>
+        (function () {
+            function show(msg) {
+                var el = document.getElementById('loading');
+                if (!el) return;
+                el.classList.add('error');
+                el.style.display = 'flex';
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+                var text = document.getElementById('loading-text') || el;
+                text.textContent = msg;
+            }
+            if (location.protocol === 'file:') {
+                window.addEventListener('DOMContentLoaded', function () {
+                    show('Esta página foi aberta direto do arquivo (file://) e o navegador bloqueia os módulos 3D. ' +
+                         'Abra por um servidor: na pasta do projeto rode "python3 -m http.server 8000" e acesse http://localhost:8000');
+                });
+            }
+            window.addEventListener('error', function (e) {
+                if (e && e.message) show('Erro ao iniciar: ' + e.message);
+            });
+        })();
+    </script>
+    <!-- A biblioteca de QR Code agora é carregada só quando o painel "Abrir no celular" é aberto -->
+</head>
+<body>
+    <div id="info">
+        <strong>Quati 3D</strong>
+        <span id="info-text">Arraste para girar, pince ou role para dar zoom</span>
+    </div>
+
+    <div id="loading" role="status" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <div id="loading-text">Carregando modelo… 0%</div>
+        <div class="bar" aria-hidden="true"><i id="loading-bar"></i></div>
+    </div>
+
+    <!-- Aviso exibido quando o dispositivo/navegador não permite acesso à câmera -->
+    <div id="ar-warning" role="alert"></div>
+
+    <!-- O botão "Ver em RA" e o link da imagem-alvo (MindAR) são injetados aqui via JS -->
+    <div id="ar-button-container"></div>
+
+    <!-- Botão flutuante para abrir o painel de QR Code -->
+    <button id="qr-toggle" aria-label="Mostrar QR Code de acesso">
+        <span class="qr-toggle-icon" aria-hidden="true">▦</span>
+        <span>Abrir no celular</span>
+    </button>
+
+    <!-- Painel com o QR Code apontando para esta mesma página -->
+    <div id="qr-panel">
+        <div class="qr-card" role="dialog" aria-modal="true" aria-labelledby="qr-title">
+            <button id="qr-close" aria-label="Fechar">×</button>
+            <h2 id="qr-title">Escaneie para abrir no celular</h2>
+            <p>Aponte a câmera do seu smartphone para o QR Code. No Android, use o Chrome para acessar a Realidade Aumentada.</p>
+            <div id="qrcode"></div>
+            <p id="qr-url" class="qr-url"></p>
+            <p class="qr-note">A página precisa estar hospedada em HTTPS (ou aberta via localhost) para a câmera funcionar. Na RA, aponte a câmera para a imagem-alvo, de frente e com boa iluminação (há um link para ela perto do botão "Ver em RA").</p>
+        </div>
+    </div>
+
+    <!-- type="module" é obrigatório porque app.js usa import/export -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
